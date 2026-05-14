@@ -27,6 +27,70 @@ app.get('/pessoas', async (req, res) => {
   }
 });
 
+app.post('/pessoas', async (req, res) => {
+  try {
+    const { nome, curso } = req.body;
+
+    if (!nome || !curso) {
+      return res.status(400).json({
+        mensagem: 'Os campos nome e curso sao obrigatorios.',
+      });
+    }
+
+    const novaPessoa = await Pessoa.create({ nome, curso });
+
+    res.status(201).json(novaPessoa);
+  } catch (error) {
+    res.status(500).json({
+      mensagem: 'Erro ao cadastrar pessoa.',
+      erro: error.message,
+    });
+  }
+});
+
+app.put('/pessoas/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nome, curso, RGM } = req.body;
+
+    const pessoaAtualizada = await Pessoa.findByIdAndUpdate(
+      id,
+      { nome, curso, RGM },
+      { new: true }
+    );
+
+    if (!pessoaAtualizada) {
+      return res.status(404).json({ mensagem: 'Pessoa não encontrada.' });
+    }
+
+    res.status(200).json(pessoaAtualizada);
+  } catch (error) {
+    res.status(500).json({
+      mensagem: 'Erro ao atualizar pessoa.',
+      erro: error.message,
+    });
+  }
+});
+
+app.delete('/pessoas/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const pessoaDeletada = await Pessoa.findByIdAndDelete(id);
+
+    if (!pessoaDeletada) {
+      return res.status(404).json({ mensagem: 'Pessoa não encontrada.' });
+    }
+
+    res.status(200).json({ mensagem: 'Pessoa deletada com sucesso.' });
+  } catch (error) {
+    res.status(500).json({
+      mensagem: 'Erro ao deletar pessoa.',
+      erro: error.message,
+    });
+  }
+});
+
 async function startServer() {
   try {
     await connectDatabase();
